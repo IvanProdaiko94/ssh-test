@@ -10,3 +10,15 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+.idea/
+task/
+
+# ignore generated files
+restapi/doc.go
+restapi/embedded_spec.go
+restapi/server.go
+restapi/operations
+cmd/tic-tac-toe-server/
+vendor/
+models/
