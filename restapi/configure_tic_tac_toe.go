@@ -4,19 +4,28 @@ package restapi
 
 import (
 	"crypto/tls"
-	"fmt"
-	"net/http"
-
+	"github.com/IvanProdaiko94/ssh-test/cfg"
+	"github.com/IvanProdaiko94/ssh-test/persistence/postgres"
+	"github.com/IvanProdaiko94/ssh-test/service"
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
+	log "github.com/sirupsen/logrus"
+	"net/http"
 
 	"github.com/IvanProdaiko94/ssh-test/restapi/operations"
 )
 
 //go:generate swagger generate server --target ../../ssh-test --name TicTacToe --spec ../api/swagger.yaml
 
+var application *service.App
+
 func configureFlags(api *operations.TicTacToeAPI) {
+	config := cfg.ReadEnv()
+	db, err := postgres.InitDBConnection(config.PostgresConfig)
+	if err != nil {
+		panic(err)
+	}
+	application = service.New(*config, api, postgres.NewTicTacToe(db))
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
 
@@ -26,42 +35,33 @@ func configureAPI(api *operations.TicTacToeAPI) http.Handler {
 
 	// Set your custom logger if needed. Default one is log.Printf
 	// Expected interface func(string, ...interface{})
-	//
-	// Example:
-	// api.Logger = log.Printf
+	api.Logger = log.Printf
 
 	api.JSONConsumer = runtime.JSONConsumer()
 
 	api.JSONProducer = runtime.JSONProducer()
 
 	if api.DeleteAPIV1GamesGameIDHandler == nil {
-		api.DeleteAPIV1GamesGameIDHandler = operations.DeleteAPIV1GamesGameIDHandlerFunc(func(params operations.DeleteAPIV1GamesGameIDParams) middleware.Responder {
-			fmt.Print("xxx")
-			return middleware.NotImplemented("operation .DeleteAPIV1GamesGameID has not yet been implemented")
-		})
+		api.DeleteAPIV1GamesGameIDHandler = operations.DeleteAPIV1GamesGameIDHandlerFunc(application.DeleteAPIV1GamesGameIDHandler)
 	}
 	if api.GetAPIV1GamesHandler == nil {
-		api.GetAPIV1GamesHandler = operations.GetAPIV1GamesHandlerFunc(func(params operations.GetAPIV1GamesParams) middleware.Responder {
-			return middleware.NotImplemented("operation .GetAPIV1Games has not yet been implemented")
-		})
+		api.GetAPIV1GamesHandler = operations.GetAPIV1GamesHandlerFunc(application.GetAPIV1GamesHandler)
 	}
 	if api.GetAPIV1GamesGameIDHandler == nil {
-		api.GetAPIV1GamesGameIDHandler = operations.GetAPIV1GamesGameIDHandlerFunc(func(params operations.GetAPIV1GamesGameIDParams) middleware.Responder {
-			return middleware.NotImplemented("operation .GetAPIV1GamesGameID has not yet been implemented")
-		})
+		api.GetAPIV1GamesGameIDHandler = operations.GetAPIV1GamesGameIDHandlerFunc(application.GetAPIV1GamesGameIDHandler)
 	}
 	if api.PostAPIV1GamesHandler == nil {
-		api.PostAPIV1GamesHandler = operations.PostAPIV1GamesHandlerFunc(func(params operations.PostAPIV1GamesParams) middleware.Responder {
-			return middleware.NotImplemented("operation .PostAPIV1Games has not yet been implemented")
-		})
+		api.PostAPIV1GamesHandler = operations.PostAPIV1GamesHandlerFunc(application.PostAPIV1GamesHandler)
 	}
 	if api.PutAPIV1GamesGameIDHandler == nil {
-		api.PutAPIV1GamesGameIDHandler = operations.PutAPIV1GamesGameIDHandlerFunc(func(params operations.PutAPIV1GamesGameIDParams) middleware.Responder {
-			return middleware.NotImplemented("operation .PutAPIV1GamesGameID has not yet been implemented")
-		})
+		api.PutAPIV1GamesGameIDHandler = operations.PutAPIV1GamesGameIDHandlerFunc(application.PutAPIV1GamesGameIDHandler)
 	}
 
-	api.ServerShutdown = func() {}
+	api.ServerShutdown = func() {
+		err := application.Close()
+		log.Errorf("close sqldb connection error: %s", err.Error())
+		// postgres shutdown
+	}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
 }

@@ -15,10 +15,9 @@
 task/
 
 # ignore generated files
-restapi/doc.go
-restapi/embedded_spec.go
-restapi/server.go
-restapi/operations
 cmd/tic-tac-toe-server/
-vendor/
 models/
+restapi/
+!restapi/configure_tic_tac_toe.go
+vendor/
+cert/
