@@ -6,6 +6,8 @@ import (
 	"github.com/IvanProdaiko94/ssh-test/persistence"
 	"github.com/go-openapi/strfmt"
 	"github.com/jinzhu/gorm"
+	_ "github.com/lib/pq" //nolint
+	"github.com/pkg/errors"
 )
 
 const GamesTable = "games"
@@ -27,7 +29,7 @@ func InitDBConnection(c persistence.SQLDBConfig) (*gorm.DB, error) {
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", c.User, c.Pass, c.Host, c.Port, c.DBName)
 	db, err := gorm.Open("postgres", connStr)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to connect to db")
 	}
 
 	db.DB().SetMaxOpenConns(c.MaxOpenConns)

@@ -8,7 +8,7 @@ import (
 	"github.com/IvanProdaiko94/ssh-test/logic"
 	"github.com/IvanProdaiko94/ssh-test/persistence/postgres"
 	"github.com/IvanProdaiko94/ssh-test/service"
-	errors "github.com/go-openapi/errors"
+	"github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	log "github.com/sirupsen/logrus"
 	"net/http"
@@ -21,7 +21,7 @@ import (
 var application *service.App
 
 func init() {
-	// FIXME: I haven't found any batter place to init all of the stuff
+	// FIXME: I failed to find batter place to init all of the stuff
 	config := cfg.ReadEnv()
 	db, err := postgres.InitDBConnection(config.PostgresConfig)
 	if err != nil {
