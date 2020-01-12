@@ -1,7 +1,6 @@
 package cfg
 
 import (
-	"github.com/IvanProdaiko94/ssh-test/logic"
 	"github.com/IvanProdaiko94/ssh-test/persistence"
 	"github.com/spf13/viper"
 )
@@ -12,8 +11,8 @@ func ReadEnv() *Config {
 	viper.SetEnvPrefix("APP")
 
 	viper.SetDefault("LOG_LEVEL", "DEBUG")
-	viper.SetDefault("GAME_MODE", logic.ModeStupid)
 	viper.SetDefault("HEALTH_CHECK_PORT", 8888)
+	viper.SetDefault("POLICY_FILE_PATH", "./logic/policy.json")
 
 	viper.SetDefault("SQLDB_HOST", "localhost")
 	viper.SetDefault("SQLDB_PORT", 5432)
@@ -25,7 +24,8 @@ func ReadEnv() *Config {
 	return &Config{
 		LogLevel:        viper.GetString("LOG_LEVEL"),
 		HealthCheckPort: viper.GetInt("HEALTH_CHECK_PORT"),
-		GameMode:        logic.ModeFromString(viper.GetString("GAME_MODE")),
+		GameMode:        viper.GetString("GAME_MODE"),
+		PolicyFilePath:  viper.GetString("POLICY_FILE_PATH"),
 		PostgresConfig: persistence.SQLDBConfig{
 			Host:         viper.GetString("SQLDB_HOST"),
 			Port:         viper.GetInt("SQLDB_PORT"),

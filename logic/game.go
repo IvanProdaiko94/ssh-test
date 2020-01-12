@@ -5,6 +5,7 @@ import (
 	"github.com/IvanProdaiko94/ssh-test/models"
 	"github.com/go-openapi/strfmt"
 	"math/rand"
+	"strings"
 )
 
 var (
@@ -17,59 +18,28 @@ type Cell uint8
 
 const (
 	f Cell = iota
-	X
-	O
+	x
+	o
 )
-
-type Player = Cell
 
 const (
-	Noughts = O
-	Crosses = X
+	Crosses = x
+	Noughts = o
 )
-
-type Mode int8
-
-const (
-	stupid Mode = iota
-	model
-
-	ModeStupid = "STUPID"
-	ModeModel  = "MODEL"
-)
-
-func ModeFromString(s string) Mode {
-	if s == ModeModel {
-		return model
-	}
-	return stupid
-}
 
 type Board struct {
-	ID   strfmt.UUID
-	B    []Cell
-	Mode Mode
-	//MachinePlays Player
+	ID     strfmt.UUID
+	B      []Cell
+	Policy Policy
 }
 
-//func machinePlaysWith(b []Cell) Player {
-//	notches := 0
-//	crosses := 0
-//
-//	for _, cell := range b {
-//		if cell == X {
-//			crosses += 1
-//		} else if cell == O {
-//			notches += 1
-//		}
-//	}
-//
-//	machinePlays := Noughts
-//	if notches > crosses {
-//		machinePlays = Crosses
-//	}
-//	return machinePlays
-//}
+func (gb *Board) String() string {
+	board := make([]byte, len(gb.B))
+	for i, v := range gb.B {
+		board[i] = byte(v)
+	}
+	return string(board)
+}
 
 func (gb *Board) hasFreeMoves() bool {
 	for _, cell := range gb.B {
@@ -108,7 +78,7 @@ func (gb *Board) MakeMachineMove(player Cell) error {
 	if !gb.hasFreeMoves() {
 		return NoFreeMoves
 	}
-	if gb.Mode == stupid {
+	if gb.Policy == nil {
 		// stupid player
 		min := 0
 		max := len(gb.B)
@@ -120,28 +90,18 @@ func (gb *Board) MakeMachineMove(player Cell) error {
 			}
 		}
 	} else {
-
+		// player with policy
+		i := gb.Policy.FindBestMove(gb.String())
+		gb.B[i] = player
 	}
 	return nil
 }
 
-func (gb *Board) MakeHumanMove(player Cell, i int) error {
-	if gb.CurrentStatus() != models.GameStatusRUNNING {
-		return EOG
-	}
-	if gb.B[i] != f {
-		return Occupied
-	}
-	// do move
-	gb.B[i] = player
-	return nil
-}
-
-func (gb *Board) CurrentStatus() string {
-	if gb.checkWinner(X) {
+func (gb *Board) GetCurrentStatus() string {
+	if gb.checkWinner(x) {
 		return models.GameStatusXWON
 	}
-	if gb.checkWinner(O) {
+	if gb.checkWinner(o) {
 		return models.GameStatusOWON
 	}
 	if gb.hasFreeMoves() {
@@ -151,19 +111,15 @@ func (gb *Board) CurrentStatus() string {
 }
 
 func (gb *Board) ToModel() *models.Game {
-	board := make([]byte, len(gb.B))
-	for i, v := range gb.B {
-		board[i] = byte(v)
-	}
-	strBoard := string(board)
+	strBoard := strings.ToUpper(gb.String())
 	return &models.Game{
 		Board:  &strBoard,
 		ID:     gb.ID,
-		Status: gb.CurrentStatus(),
+		Status: gb.GetCurrentStatus(),
 	}
 }
 
-func NewBoard(game models.Game, mode Mode) *Board {
+func NewBoard(game models.Game, policy Policy) *Board {
 	var b []Cell
 	if game.Board == nil {
 		b = []Cell{
@@ -173,15 +129,14 @@ func NewBoard(game models.Game, mode Mode) *Board {
 		}
 	} else {
 		b = make([]Cell, len(*game.Board))
-		for i, char := range *game.Board {
+		for i, char := range strings.ToLower(*game.Board) {
 			b[i] = Cell(char)
 		}
 	}
 
 	return &Board{
-		ID:   game.ID,
-		B:    b,
-		Mode: mode,
-		//MachinePlays: machinePlaysWith(b),
+		ID:     game.ID,
+		B:      b,
+		Policy: policy,
 	}
 }

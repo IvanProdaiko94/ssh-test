@@ -5,6 +5,7 @@ package restapi
 import (
 	"crypto/tls"
 	"github.com/IvanProdaiko94/ssh-test/cfg"
+	"github.com/IvanProdaiko94/ssh-test/logic"
 	"github.com/IvanProdaiko94/ssh-test/persistence/postgres"
 	"github.com/IvanProdaiko94/ssh-test/service"
 	errors "github.com/go-openapi/errors"
@@ -19,13 +20,25 @@ import (
 
 var application *service.App
 
-func configureFlags(api *operations.TicTacToeAPI) {
+func init() {
+	// FIXME: I haven't found any batter place to init all of the stuff
 	config := cfg.ReadEnv()
 	db, err := postgres.InitDBConnection(config.PostgresConfig)
 	if err != nil {
 		panic(err)
 	}
-	application = service.New(*config, api, postgres.NewTicTacToe(db))
+	var policy logic.Policy
+	if config.PolicyFilePath != "" {
+		var err error
+		policy, err = logic.NewDefaultPolicy(config.PolicyFilePath)
+		if err != nil {
+			panic(err)
+		}
+	}
+	application = service.New(config, postgres.NewTicTacToe(db), policy)
+}
+
+func configureFlags(api *operations.TicTacToeAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
 

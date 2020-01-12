@@ -14,9 +14,9 @@ import (
 )
 
 type App struct {
-	config cfg.Config
-	api    *operations.TicTacToeAPI
+	config *cfg.Config
 	db     persistence.TicTacToe
+	policy logic.Policy
 }
 
 func (app *App) GetAPIV1GamesHandler(params operations.GetAPIV1GamesParams) middleware.Responder {
@@ -54,8 +54,8 @@ func (app *App) PostAPIV1GamesHandler(params operations.PostAPIV1GamesParams) mi
 		return operations.NewPostAPIV1GamesBadRequest()
 	}
 
-	board := logic.NewBoard(*game, app.config.GameMode)
-	if status := board.CurrentStatus(); status != models.GameStatusRUNNING {
+	board := logic.NewBoard(*game, app.policy)
+	if status := board.GetCurrentStatus(); status != models.GameStatusRUNNING {
 		log.Error(errors.New("invalid input"))
 		return operations.NewPostAPIV1GamesBadRequest()
 	}
@@ -86,7 +86,7 @@ func (app *App) PutAPIV1GamesGameIDHandler(params operations.PutAPIV1GamesGameID
 		return operations.NewPutAPIV1GamesGameIDBadRequest()
 	}
 
-	board := logic.NewBoard(*game, app.config.GameMode)
+	board := logic.NewBoard(*game, app.policy)
 	// FIXME: not always O
 	// ignore error since if no moves available, than game has come to and end
 	_ = board.MakeMachineMove(logic.Noughts)
@@ -117,10 +117,10 @@ func (app *App) Close() error {
 	return app.db.Close()
 }
 
-func New(config cfg.Config, api *operations.TicTacToeAPI, db persistence.TicTacToe) *App {
+func New(config *cfg.Config, db persistence.TicTacToe, policy logic.Policy) *App {
 	return &App{
 		config: config,
-		api:    api,
 		db:     db,
+		policy: policy,
 	}
 }
