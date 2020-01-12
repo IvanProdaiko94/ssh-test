@@ -23,3 +23,7 @@ make generate_certificate
 # start server
 make run
 ```
+
+## How to play
+
+Load [this file](./ssh.postman_collection.json) (it is a collection) to Postman and play.

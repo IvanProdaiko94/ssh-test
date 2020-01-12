@@ -5,15 +5,15 @@ package restapi
 import (
 	"crypto/tls"
 	"github.com/IvanProdaiko94/ssh-test/cfg"
-	"github.com/IvanProdaiko94/ssh-test/logic"
+	"github.com/IvanProdaiko94/ssh-test/game"
 	"github.com/IvanProdaiko94/ssh-test/persistence/postgres"
+	"github.com/IvanProdaiko94/ssh-test/restapi/operations"
 	"github.com/IvanProdaiko94/ssh-test/service"
 	"github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	log "github.com/sirupsen/logrus"
 	"net/http"
-
-	"github.com/IvanProdaiko94/ssh-test/restapi/operations"
+	"os"
 )
 
 //go:generate swagger generate server --target ../../ssh-test --name TicTacToe --spec ../api/swagger.yaml
@@ -23,14 +23,23 @@ var application *service.App
 func init() {
 	// FIXME: I failed to find batter place to init all of the stuff
 	config := cfg.ReadEnv()
+
+	log.SetFormatter(&log.JSONFormatter{})
+	log.SetOutput(os.Stdout)
+	level, err := log.ParseLevel(config.LogLevel)
+	if err != nil {
+		panic(err)
+	}
+	log.SetLevel(level)
+
 	db, err := postgres.InitDBConnection(config.PostgresConfig)
 	if err != nil {
 		panic(err)
 	}
-	var policy logic.Policy
+	var policy game.Policy
 	if config.PolicyFilePath != "" {
 		var err error
-		policy, err = logic.NewDefaultPolicy(config.PolicyFilePath)
+		policy, err = game.NewDefaultPolicy(config.PolicyFilePath)
 		if err != nil {
 			panic(err)
 		}
@@ -54,21 +63,11 @@ func configureAPI(api *operations.TicTacToeAPI) http.Handler {
 
 	api.JSONProducer = runtime.JSONProducer()
 
-	if api.DeleteAPIV1GamesGameIDHandler == nil {
-		api.DeleteAPIV1GamesGameIDHandler = operations.DeleteAPIV1GamesGameIDHandlerFunc(application.DeleteAPIV1GamesGameIDHandler)
-	}
-	if api.GetAPIV1GamesHandler == nil {
-		api.GetAPIV1GamesHandler = operations.GetAPIV1GamesHandlerFunc(application.GetAPIV1GamesHandler)
-	}
-	if api.GetAPIV1GamesGameIDHandler == nil {
-		api.GetAPIV1GamesGameIDHandler = operations.GetAPIV1GamesGameIDHandlerFunc(application.GetAPIV1GamesGameIDHandler)
-	}
-	if api.PostAPIV1GamesHandler == nil {
-		api.PostAPIV1GamesHandler = operations.PostAPIV1GamesHandlerFunc(application.PostAPIV1GamesHandler)
-	}
-	if api.PutAPIV1GamesGameIDHandler == nil {
-		api.PutAPIV1GamesGameIDHandler = operations.PutAPIV1GamesGameIDHandlerFunc(application.PutAPIV1GamesGameIDHandler)
-	}
+	api.DeleteAPIV1GamesGameIDHandler = operations.DeleteAPIV1GamesGameIDHandlerFunc(application.DeleteAPIV1GamesGameIDHandler)
+	api.GetAPIV1GamesHandler = operations.GetAPIV1GamesHandlerFunc(application.GetAPIV1GamesHandler)
+	api.GetAPIV1GamesGameIDHandler = operations.GetAPIV1GamesGameIDHandlerFunc(application.GetAPIV1GamesGameIDHandler)
+	api.PostAPIV1GamesHandler = operations.PostAPIV1GamesHandlerFunc(application.PostAPIV1GamesHandler)
+	api.PutAPIV1GamesGameIDHandler = operations.PutAPIV1GamesGameIDHandlerFunc(application.PutAPIV1GamesGameIDHandler)
 
 	api.ServerShutdown = func() {
 		err := application.Close()

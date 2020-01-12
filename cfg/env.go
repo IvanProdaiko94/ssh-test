@@ -12,7 +12,7 @@ func ReadEnv() *Config {
 
 	viper.SetDefault("LOG_LEVEL", "DEBUG")
 	viper.SetDefault("HEALTH_CHECK_PORT", 8888)
-	viper.SetDefault("POLICY_FILE_PATH", "./logic/policy.json")
+	viper.SetDefault("POLICY_FILE_PATH", "./game/policy.json")
 
 	viper.SetDefault("SQLDB_HOST", "localhost")
 	viper.SetDefault("SQLDB_PORT", 5432)

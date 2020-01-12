@@ -42,7 +42,7 @@ type repo struct {
 
 func (r *repo) GetAllGames() ([]*models.Game, error) {
 	var games []*models.Game
-	if err := checkError(r.db.Table(GamesTable).Find(games)); err != nil {
+	if err := checkError(r.db.Table(GamesTable).Find(&games)); err != nil {
 		return nil, err
 	}
 	return games, nil
@@ -57,16 +57,15 @@ func (r *repo) GetGameById(id string) (*models.Game, error) {
 }
 
 func (r *repo) CreateGame(game *models.Game) error {
-	return checkError(r.db.Table(GamesTable).Update(game))
+	return checkError(r.db.Table(GamesTable).Create(game))
 }
 
 func (r *repo) UpdateGame(game *models.Game) error {
-	return checkError(r.db.Table(GamesTable).Update(game))
+	return checkError(r.db.Table(GamesTable).Where("id = ?", game.ID).Update(game))
 }
 
 func (r *repo) DeleteGame(id string) error {
-	game := &models.Game{ID: strfmt.UUID(id)}
-	return checkError(r.db.Table(GamesTable).Delete(game))
+	return checkError(r.db.Table(GamesTable).Delete(&models.Game{ID: strfmt.UUID(id)}))
 }
 
 func (r *repo) Close() error {

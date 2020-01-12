@@ -1,4 +1,4 @@
-package logic
+package game
 
 import (
 	"errors"
@@ -9,12 +9,12 @@ import (
 )
 
 var (
-	EOG         = errors.New("logic has come to an end")
+	EOG         = errors.New("game has come to an end")
 	Occupied    = errors.New("the cell is occupied already")
 	NoFreeMoves = errors.New("no free moves left")
 )
 
-type Cell uint8
+type Cell = uint8
 
 const (
 	f Cell = iota
@@ -36,7 +36,14 @@ type Board struct {
 func (gb *Board) String() string {
 	board := make([]byte, len(gb.B))
 	for i, v := range gb.B {
-		board[i] = byte(v)
+		switch v {
+		case x:
+			board[i] = 'x'
+		case o:
+			board[i] = 'o'
+		case f:
+			board[i] = '-'
+		}
 	}
 	return string(board)
 }
@@ -110,7 +117,7 @@ func (gb *Board) GetCurrentStatus() string {
 	return models.GameStatusDRAW
 }
 
-func (gb *Board) ToModel() *models.Game {
+func (gb *Board) ToModelGame() *models.Game {
 	strBoard := strings.ToUpper(gb.String())
 	return &models.Game{
 		Board:  &strBoard,
@@ -130,7 +137,14 @@ func NewBoard(game models.Game, policy Policy) *Board {
 	} else {
 		b = make([]Cell, len(*game.Board))
 		for i, char := range strings.ToLower(*game.Board) {
-			b[i] = Cell(char)
+			switch char {
+			case 'x':
+				b[i] = x
+			case 'o':
+				b[i] = o
+			case '-':
+				b[i] = f
+			}
 		}
 	}
 
