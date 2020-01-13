@@ -32,3 +32,15 @@ func TestValidateBoardWithPrevMove4(t *testing.T) {
 	isValid := ValidateBoardWithPrevMove(prev, curr)
 	assert.Equal(t, isValid, true, "Valid")
 }
+
+func TestValidateBoard(t *testing.T) {
+	curr := "O---O----"
+	isValid := ValidateBoard(curr)
+	assert.Equal(t, isValid, false, "Invalid")
+}
+
+func TestValidateBoard2(t *testing.T) {
+	curr := "X---X--OO"
+	isValid := ValidateBoard(curr)
+	assert.Equal(t, isValid, true, "Valid")
+}

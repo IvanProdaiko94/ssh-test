@@ -4,6 +4,24 @@ import (
 	"strings"
 )
 
+func ValidateBoard(curr string) bool {
+	curr = strings.ToLower(curr)
+	x := uint8('x')
+	o := uint8('o')
+
+	countX := 0
+	countO := 0
+
+	for i := 0; i < len(curr); i++ {
+		if curr[i] == x {
+			countX += 1
+		} else if curr[i] == o {
+			countO += 1
+		}
+	}
+	return countX+1 == countO || countO+1 == countX || countX == countO
+}
+
 func ValidateBoardWithPrevMove(prev string, curr string) bool {
 	prev = strings.ToLower(prev)
 	curr = strings.ToLower(curr)

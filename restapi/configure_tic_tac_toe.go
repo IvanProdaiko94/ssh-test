@@ -14,6 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
+	"time"
 )
 
 //go:generate swagger generate server --target ../../ssh-test --name TicTacToe --spec ../api/swagger.yaml
@@ -32,7 +33,7 @@ func init() {
 	}
 	log.SetLevel(level)
 
-	db, err := postgres.InitDBConnection(config.PostgresConfig)
+	db, err := postgres.InitWithRetries(config.PostgresConfig, time.Second*5, 3)
 	if err != nil {
 		panic(err)
 	}

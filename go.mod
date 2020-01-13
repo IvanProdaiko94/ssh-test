@@ -5,10 +5,10 @@ go 1.12
 require (
 	github.com/DATA-DOG/go-sqlmock v1.4.0
 	github.com/carbocation/handlers v0.0.0-20140528190747-c939c6d9ef31 // indirect
-	github.com/carbocation/interpose v0.0.0-20161206215253-723534742ba3
+	github.com/carbocation/interpose v0.0.0-20161206215253-723534742ba3 // indirect
 	github.com/codegangsta/inject v0.0.0-20150114235600-33e0aa1cb7c0 // indirect
 	github.com/didip/tollbooth v4.0.2+incompatible // indirect
-	github.com/dre1080/recover v0.0.0-20150930082637-1c296bbb3227
+	github.com/dre1080/recover v0.0.0-20150930082637-1c296bbb3227 // indirect
 	github.com/facebookgo/stack v0.0.0-20160209184415-751773369052 // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/go-martini/martini v0.0.0-20170121215854-22fa46961aab // indirect

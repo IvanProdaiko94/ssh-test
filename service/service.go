@@ -106,6 +106,11 @@ func (app *App) PutAPIV1GamesGameIDHandler(params operations.PutAPIV1GamesGameID
 		return operations.NewPutAPIV1GamesGameIDBadRequest()
 	}
 
+	if !game.ValidateBoard(*params.Game.Board) {
+		log.Error(errors.New("invalid board input"))
+		return operations.NewPutAPIV1GamesGameIDBadRequest()
+	}
+
 	prevMove, err := app.db.GetGameById(string(params.Game.ID))
 	if err != nil {
 		log.Error(errors.Wrap(err, "failed to get previous move"))

@@ -8,6 +8,8 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq" //nolint
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
+	"time"
 )
 
 const GamesTable = "games"
@@ -34,6 +36,18 @@ func InitDBConnection(c persistence.SQLDBConfig) (*gorm.DB, error) {
 
 	db.DB().SetMaxOpenConns(c.MaxOpenConns)
 	return db, nil
+}
+
+func InitWithRetries(c persistence.SQLDBConfig, sleep time.Duration, times int) (db *gorm.DB, err error) {
+	for i := 0; i < times; i++ {
+		db, err = InitDBConnection(c)
+		if err != nil {
+			log.Warnf("failed to connect to db. Try in %s", sleep)
+			time.Sleep(sleep)
+			continue
+		}
+	}
+	return
 }
 
 type repo struct {
