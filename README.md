@@ -3,7 +3,7 @@
 ## Prerequisites
 
 Author used `go version go1.12.13 darwin/amd64`.
-You must have `docker` and `openssl` installed on your computer.
+You must have `docker`, `docker-compose`, `openssl` installed on your computer.
 
 ### Reading
 
@@ -21,9 +21,15 @@ I found [this article](https://ambareeshr.wordpress.com/2019/01/07/markov-decisi
 make generate_certificate
 
 # start server
-make run
+docker-compose up
 ```
 
 ## How to play
 
 Load [this file](./ssh.postman_collection.json) (it is a collection) to Postman and play.
+
+## How to run tests
+
+```bash
+make unit_test
+```

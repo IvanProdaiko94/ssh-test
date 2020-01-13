@@ -72,6 +72,16 @@ func (gb *Board) checkWinner(wc Cell) bool {
 		(b[2] == wc && b[4] == wc && b[7] == wc)
 }
 
+func (gb *Board) IsStartOfTheGame() bool {
+	nonFreeEntriesCount := 0
+	for _, cell := range gb.B {
+		if cell != f {
+			nonFreeEntriesCount += 1
+		}
+	}
+	return nonFreeEntriesCount <= 1
+}
+
 func (gb *Board) IsEmpty() bool {
 	for _, cell := range gb.B {
 		if cell != f {

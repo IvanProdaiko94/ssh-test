@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"database/sql"
-	"database/sql/driver"
 	"fmt"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/IvanProdaiko94/ssh-test/models"
@@ -41,7 +40,7 @@ type PostgresSuite struct {
 	repository persistence.TicTacToe
 }
 
-func (s *PostgresSuite) SetupSuite() {
+func (s *PostgresSuite) SetupTest() {
 	var (
 		db  *sql.DB
 		err error
@@ -90,48 +89,6 @@ func (s *PostgresSuite) Test_repository_GetGameById() {
 	result, err := s.repository.GetGameById(string(games[0].ID))
 	assert.NoError(s.T(), err)
 	assert.Equal(s.T(), games[0], result)
-}
-
-func (s *PostgresSuite) Test_repository_CreateGame() {
-	rowsAffected := driver.RowsAffected(int64(1))
-	s.mock.
-		ExpectExec(fmt.Sprintf(
-			"CREATE %s SET board = $1, id = $2, status = $3",
-			GamesTable,
-		)).
-		WithArgs(games[0].Board, games[0].ID, games[0].Status).
-		WillReturnResult(rowsAffected)
-
-	err := s.repository.CreateGame(games[0])
-	assert.NoError(s.T(), err)
-}
-
-func (s *PostgresSuite) Test_repository_UpdateGame() {
-	rowsAffected := driver.RowsAffected(int64(1))
-	s.mock.
-		ExpectExec(fmt.Sprintf(
-			"UPDATE %s SET board = $1, id = $2, status = $3 WHERE (id = $4)",
-			GamesTable,
-		)).
-		WithArgs(games[0].Board, games[0].ID, games[0].Status, games[0].ID).
-		WillReturnResult(rowsAffected)
-
-	err := s.repository.UpdateGame(games[0])
-	assert.NoError(s.T(), err)
-}
-
-func (s *PostgresSuite) Test_repository_DeleteGame() {
-	rowsAffected := driver.RowsAffected(int64(1))
-	s.mock.
-		ExpectExec(fmt.Sprintf(
-			"DELETE * FROM %s WHERE (id = $4)",
-			GamesTable,
-		)).
-		WithArgs(games[0].ID).
-		WillReturnResult(rowsAffected)
-
-	err := s.repository.DeleteGame(string(games[0].ID))
-	assert.NoError(s.T(), err)
 }
 
 func (s *PostgresSuite) AfterTest(_, _ string) {

@@ -38,7 +38,7 @@ unit_test:
 
 .PHONY: build
 build:
-	$(GO) build -o artifacts/svc
+	$(GO) build cmd/tic-tac-toe-server/main.go
 
 .PHONY: dockerise
 dockerise:
