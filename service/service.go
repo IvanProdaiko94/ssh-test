@@ -13,13 +13,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type App struct {
+type Service struct {
 	config *cfg.Config
 	db     persistence.TicTacToe
 	policy game.Policy
 }
 
-func (app *App) GetAPIV1GamesHandler(params operations.GetAPIV1GamesParams) middleware.Responder {
+func (app *Service) GetAPIV1GamesHandler(params operations.GetAPIV1GamesParams) middleware.Responder {
 	dbResponse, err := app.db.GetAllGames()
 	if err != nil {
 		log.Error(err)
@@ -34,7 +34,7 @@ func (app *App) GetAPIV1GamesHandler(params operations.GetAPIV1GamesParams) midd
 	return operations.NewGetAPIV1GamesOK().WithPayload(dbResponse)
 }
 
-func (app *App) GetAPIV1GamesGameIDHandler(params operations.GetAPIV1GamesGameIDParams) middleware.Responder {
+func (app *Service) GetAPIV1GamesGameIDHandler(params operations.GetAPIV1GamesGameIDParams) middleware.Responder {
 	dbResponse, err := app.db.GetGameById(string(params.GameID))
 	if err != nil {
 		log.Error(err)
@@ -49,7 +49,7 @@ func (app *App) GetAPIV1GamesGameIDHandler(params operations.GetAPIV1GamesGameID
 	return operations.NewGetAPIV1GamesGameIDOK().WithPayload(dbResponse)
 }
 
-func (app *App) PostAPIV1GamesHandler(params operations.PostAPIV1GamesParams) middleware.Responder {
+func (app *Service) PostAPIV1GamesHandler(params operations.PostAPIV1GamesParams) middleware.Responder {
 	// [400] if no param provided
 	if params.Game == nil {
 		log.Error(errors.New("bad parameters"))
@@ -89,7 +89,7 @@ func (app *App) PostAPIV1GamesHandler(params operations.PostAPIV1GamesParams) mi
 		WithPayload(&operations.PostAPIV1GamesCreatedBody{Location: url})
 }
 
-func (app *App) PutAPIV1GamesGameIDHandler(params operations.PutAPIV1GamesGameIDParams) middleware.Responder {
+func (app *Service) PutAPIV1GamesGameIDHandler(params operations.PutAPIV1GamesGameIDParams) middleware.Responder {
 	// [400] if no param provided
 	if params.Game == nil {
 		log.Error(errors.New("bad parameters"))
@@ -136,7 +136,7 @@ func (app *App) PutAPIV1GamesGameIDHandler(params operations.PutAPIV1GamesGameID
 	return operations.NewPutAPIV1GamesGameIDOK().WithPayload(model)
 }
 
-func (app *App) DeleteAPIV1GamesGameIDHandler(params operations.DeleteAPIV1GamesGameIDParams) middleware.Responder {
+func (app *Service) DeleteAPIV1GamesGameIDHandler(params operations.DeleteAPIV1GamesGameIDParams) middleware.Responder {
 	if err := app.db.DeleteGame(string(params.GameID)); err != nil {
 		log.Error(err)
 		// [404] if failed to find the game
@@ -149,12 +149,12 @@ func (app *App) DeleteAPIV1GamesGameIDHandler(params operations.DeleteAPIV1Games
 	return operations.NewDeleteAPIV1GamesGameIDOK()
 }
 
-func (app *App) Close() error {
+func (app *Service) Close() error {
 	return app.db.Close()
 }
 
-func New(config *cfg.Config, db persistence.TicTacToe, policy game.Policy) *App {
-	return &App{
+func New(config *cfg.Config, db persistence.TicTacToe, policy game.Policy) *Service {
+	return &Service{
 		config: config,
 		db:     db,
 		policy: policy,

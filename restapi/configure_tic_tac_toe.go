@@ -4,49 +4,15 @@ package restapi
 
 import (
 	"crypto/tls"
-	"github.com/IvanProdaiko94/ssh-test/cfg"
-	"github.com/IvanProdaiko94/ssh-test/game"
-	"github.com/IvanProdaiko94/ssh-test/persistence/postgres"
 	"github.com/IvanProdaiko94/ssh-test/restapi/operations"
 	"github.com/IvanProdaiko94/ssh-test/service"
 	"github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	log "github.com/sirupsen/logrus"
 	"net/http"
-	"os"
-	"time"
 )
 
 //go:generate swagger generate server --target ../../ssh-test --name TicTacToe --spec ../api/swagger.yaml
-
-var application *service.App
-
-func init() {
-	// FIXME: I failed to find batter place to init all of the stuff
-	config := cfg.ReadEnv()
-
-	log.SetFormatter(&log.JSONFormatter{})
-	log.SetOutput(os.Stdout)
-	level, err := log.ParseLevel(config.LogLevel)
-	if err != nil {
-		panic(err)
-	}
-	log.SetLevel(level)
-
-	db, err := postgres.InitWithRetries(config.PostgresConfig, time.Second*5, 3)
-	if err != nil {
-		panic(err)
-	}
-	var policy game.Policy
-	if config.PolicyFilePath != "" {
-		var err error
-		policy, err = game.NewDefaultPolicy(config.PolicyFilePath)
-		if err != nil {
-			panic(err)
-		}
-	}
-	application = service.New(config, postgres.NewTicTacToe(db), policy)
-}
 
 func configureFlags(api *operations.TicTacToeAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
@@ -64,14 +30,14 @@ func configureAPI(api *operations.TicTacToeAPI) http.Handler {
 
 	api.JSONProducer = runtime.JSONProducer()
 
-	api.DeleteAPIV1GamesGameIDHandler = operations.DeleteAPIV1GamesGameIDHandlerFunc(application.DeleteAPIV1GamesGameIDHandler)
-	api.GetAPIV1GamesHandler = operations.GetAPIV1GamesHandlerFunc(application.GetAPIV1GamesHandler)
-	api.GetAPIV1GamesGameIDHandler = operations.GetAPIV1GamesGameIDHandlerFunc(application.GetAPIV1GamesGameIDHandler)
-	api.PostAPIV1GamesHandler = operations.PostAPIV1GamesHandlerFunc(application.PostAPIV1GamesHandler)
-	api.PutAPIV1GamesGameIDHandler = operations.PutAPIV1GamesGameIDHandlerFunc(application.PutAPIV1GamesGameIDHandler)
+	api.DeleteAPIV1GamesGameIDHandler = operations.DeleteAPIV1GamesGameIDHandlerFunc(service.App.DeleteAPIV1GamesGameIDHandler)
+	api.GetAPIV1GamesHandler = operations.GetAPIV1GamesHandlerFunc(service.App.GetAPIV1GamesHandler)
+	api.GetAPIV1GamesGameIDHandler = operations.GetAPIV1GamesGameIDHandlerFunc(service.App.GetAPIV1GamesGameIDHandler)
+	api.PostAPIV1GamesHandler = operations.PostAPIV1GamesHandlerFunc(service.App.PostAPIV1GamesHandler)
+	api.PutAPIV1GamesGameIDHandler = operations.PutAPIV1GamesGameIDHandlerFunc(service.App.PutAPIV1GamesGameIDHandler)
 
 	api.ServerShutdown = func() {
-		err := application.Close()
+		err := service.App.Close()
 		log.Errorf("close sqldb connection error: %s", err.Error())
 		// postgres shutdown
 	}
@@ -100,15 +66,5 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
-	//handlePanic := recover.New(&recover.Options{Log: log.Println})
-	//logViaLogrus := interpose.NegroniLogrus()
-
-	// rate limiter
-
-	//limiter := tollbooth.NewLimiter(10, nil)
-	//limiter.SetIPLookups([]string{"RemoteAddr", "X-Forwarded-For", "X-Real-IP"})
-	// tollbooth.LimitHandler(limiter, logViaLogrus(handler))
-
-	//return handlePanic(logViaLogrus(handler))
 	return handler
 }
