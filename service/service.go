@@ -73,11 +73,7 @@ func (app *App) PostAPIV1GamesHandler(params operations.PostAPIV1GamesParams) mi
 	}
 
 	// [500] if machine failed to make a move
-	if err := board.MakeMachineMove(game.Noughts); err != nil {
-		log.Error(err)
-		return operations.NewPostAPIV1GamesInternalServerError()
-	}
-
+	board.MakeMachineMove(game.Noughts)
 	model := board.ToModelGame()
 
 	// [500] if failed to create a game
@@ -126,7 +122,7 @@ func (app *App) PutAPIV1GamesGameIDHandler(params operations.PutAPIV1GamesGameID
 
 	board := game.NewBoard(*params.Game, app.policy)
 	// ignore error since if no moves available, than game has come to and end
-	_ = board.MakeMachineMove(game.Noughts)
+	board.MakeMachineMove(game.Noughts)
 	model := board.ToModelGame()
 	if err := app.db.UpdateGame(model); err != nil {
 		log.Error(err)

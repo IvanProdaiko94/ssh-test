@@ -69,7 +69,7 @@ func (gb *Board) checkWinner(wc Cell) bool {
 		(b[2] == wc && b[5] == wc && b[8] == wc) ||
 		// check diagonals
 		(b[0] == wc && b[4] == wc && b[8] == wc) ||
-		(b[2] == wc && b[4] == wc && b[7] == wc)
+		(b[2] == wc && b[4] == wc && b[6] == wc)
 }
 
 func (gb *Board) IsStartOfTheGame() bool {
@@ -91,9 +91,9 @@ func (gb *Board) IsEmpty() bool {
 	return true
 }
 
-func (gb *Board) MakeMachineMove(player Cell) error {
-	if !gb.hasFreeMoves() {
-		return NoFreeMoves
+func (gb *Board) MakeMachineMove(player Cell) {
+	if gb.GetCurrentStatus() != models.GameStatusRUNNING {
+		return
 	}
 	if gb.Policy == nil {
 		// stupid player
@@ -103,7 +103,6 @@ func (gb *Board) MakeMachineMove(player Cell) error {
 			i := rand.Intn(max-min+1) + min
 			if gb.B[i] == f {
 				gb.B[i] = player
-				return nil
 			}
 		}
 	} else {
@@ -111,7 +110,6 @@ func (gb *Board) MakeMachineMove(player Cell) error {
 		i := gb.Policy.FindBestMove(gb.String())
 		gb.B[i] = player
 	}
-	return nil
 }
 
 func (gb *Board) GetCurrentStatus() string {
