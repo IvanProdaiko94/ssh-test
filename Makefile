@@ -51,3 +51,6 @@ generate_certificate:
 		-newkey rsa:2048 -keyout $(CERTIFICATE_DIR)/RootCA.key \
 		-out $(CERTIFICATE_DIR)/RootCA.pem -subj "/C=US/CN=Example-Root-CA"
 	openssl x509 -outform pem -in $(CERTIFICATE_DIR)/RootCA.pem -out $(CERTIFICATE_DIR)/RootCA.crt
+
+.PHONY: lint
+	golangci-lint run ./...
