@@ -18,6 +18,12 @@ I found [this article](https://ambareeshr.wordpress.com/2019/01/07/markov-decisi
 
 ## How to start
 ```.bash
+# generate code
+make generate
+
+# install dependencies
+make deps
+
 # generate certificate
 make generate_certificate
 

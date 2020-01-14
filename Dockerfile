@@ -18,7 +18,8 @@ RUN download_url=$(curl -s https://api.github.com/repos/go-swagger/go-swagger/re
 # generate templates
 RUN swagger validate ./swagger.yaml && swagger generate server -f ./swagger.yaml
 
-# install dependencies
+# install dependencies (actually this stap could be avoided since we copy the whole dir including vendor)
+# but I decided not to vendor folder.
 RUN GO111MODULE=on go mod download && GO111MODULE=on go mod vendor
 
 # build an app
